@@ -25,13 +25,16 @@ class MarketData:
             if i == 0:
                 self.ticks_time = df_rates['time']
 
+                df_rates = df_rates.rename(columns=lambda c: f'{sym},{c}')
+                all_p.append(df_rates.iloc[:, :7])
+
             df_rates = df_rates.rename(columns=lambda c: f'{sym},{c}')
             all_p.append(df_rates.iloc[:, 1:7])
 
         all_p = pd.concat(all_p, axis=1)
         all_p = all_p.fillna(method='ffill')
         all_p = all_p.fillna(method='bfill')
-
+        # all_p.iloc[:,0] =  pd.to_datetime(all_p.iloc[:,0], unit='s')
         return all_p
 
     @property
@@ -88,7 +91,7 @@ class MarketData:
 
     @property
     def time(self):
-        return pd.to_datetime(self.ticks_time, unit='s')
+        return pd.to_datetime(self.ticks_time.iloc[:], unit='s')
 
     @property
     def log_true_range(self):
@@ -99,24 +102,3 @@ class MarketData:
         return []
 
 
-class LiveTicks:
-    def __init__(self,
-                 c_datetime_request,
-                 c_diff_datetime,
-                 c_symbol: str,
-                 ):
-        self.datetime_request = c_datetime_request
-        self.delta_datetime = c_diff_datetime
-        self.symbol = c_symbol
-        self.ticks = self.get_ticks()
-
-    def get_ticks(self):
-        start_datetime = self.datetime_request - self.delta_datetime
-        end_datetime = self.datetime_request
-        all_ticks = pd.DataFrame(mt5.copy_ticks_range(self.symbol, start_datetime, end_datetime, mt5.COPY_TICKS_ALL))
-
-        class ticks_sides(object):
-            bid = all_ticks['bid'].to_numpy(dtype=float)
-            ask = all_ticks['ask'].to_numpy(dtype=float)
-
-        return ticks_sides

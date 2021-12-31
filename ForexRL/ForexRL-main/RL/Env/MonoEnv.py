@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-
+import random
 
 class MonoEnv(gym.Env):
     def __init__(self,
@@ -22,7 +22,6 @@ class MonoEnv(gym.Env):
         self.index_current_step: int = 0
         self.index_last_step: int = self.state_observation.shape[0] - 1
         self.total_reward = 0.
-
     def reset(self):
         self.index_current_step = 0
         self.total_reward = 1.
@@ -30,8 +29,12 @@ class MonoEnv(gym.Env):
 
     def step(self, step_action):
         p_step_action = -1 if step_action == 2 else step_action
+        p_step_reward = self.state_reward[self.index_current_step] + random.randint(-3,3)
 
-        step_reward = p_step_action * self.state_reward[self.index_current_step]*np.float32(1e7)
+        rand_action = random.randint(-1,1)
+        rand_reward = p_step_reward * rand_action
+
+        step_reward = p_step_action * p_step_reward
         self.total_reward += step_reward
 
         self.index_current_step += 1
@@ -39,13 +42,14 @@ class MonoEnv(gym.Env):
         step_observation = self.state_observation[self.index_current_step]
         done = True if self.index_current_step == self.index_last_step else False
 
-        info = {"total_reward": self.total_reward}
+        info =[rand_reward,p_step_reward] #{"rand_reward": rand_reward}
         # print(self.index_current_step, self.total_reward)
-
+        #print(self.index_current_step)
         return step_observation, step_reward, done, info
 
     def render(self, mode="human"):
-        print('\total reward', self.total_reward)
+        #print('\ttotal reward', self.total_reward)
+        pass
 
 
 def mono_env_maker(mono_config):

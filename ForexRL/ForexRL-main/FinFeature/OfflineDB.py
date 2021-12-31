@@ -8,6 +8,8 @@ from FinFeature.TimeSeries.Kalman import Kalman_smoother
 mrk = MarketData(MarketTime().time_range, Symbols(currencies).selected_symbols)
 
 df_rates = mrk.all_rates
+print(df_rates)
+print(df_rates.shape)
 
 
 class TickDB:
@@ -27,12 +29,11 @@ class TickDB:
         return df_smooth_rates
 
     def to_csv(self):
-        smooths = self.all_smooths(Q=0.001)
-        very_smooths = self.all_smooths(Q=0.00000001)
-        smooths.to_csv('DB\\smooths.csv', index=False, )
-        very_smooths.to_csv('DB\\very_smooths.csv', index=False, )
+        #smooths = self.all_smooths(Q=0.001)
+        #very_smooths = self.all_smooths(Q=0.00000001)
+        #smooths.to_csv('DB\\smooths.csv', index=False, )
+        #very_smooths.to_csv('DB\\very_smooths.csv', index=False, )
 
-        self.df_rates.to_csv('DB\\rates.csv', index=False, )
-
+        self.df_rates.to_csv('ratesM1.csv', index=False, )
 
 print(TickDB(df_rates).to_csv())

@@ -45,3 +45,52 @@ for i in range(time_steps):
 
 # plot actions
 act = env.action_history
+
+
+#### alter
+
+# trainer = pg.PGTrainer(env='Forex',
+#
+#                          config={
+#                              "framework": "torch",
+#                              # "num_gpus": 1,
+#                              #"num_workers": 10,
+#                              #"env_config":multi_env_config,
+#                              "model": {
+#                                  "fcnet_hiddens": [512, 512],
+#                                  # "post_fcnet_hiddens": [512, 512, 512, 512, 512],
+#                                  # "post_fcnet_activation": "relu",
+#                                  # == LSTM ==
+#                                  # Whether to wrap the model with an LSTM.
+#                                  "use_lstm": True,
+#                                  # Max seq len for training the LSTM, defaults to 20.
+#                                  "max_seq_len": 150,
+#                                  # Size of the LSTM cell.
+#                                  "lstm_cell_size": 1024,
+#                                  # Whether to feed a_{t-1} to LSTM (one-hot encoded if discrete).
+#                                  "lstm_use_prev_action": True,
+#                                  # Whether to feed r_{t-1} to LSTM.
+#                                  "lstm_use_prev_reward": True,
+#                                  # Whether the LSTM is time-major (TxBx..) or batch-major (BxTx..).
+#                                  "_time_major": True,
+#                              },
+#                              "lr": 0.04,
+#
+#                              "num_gpus": 1,
+#                              "multiagent": {
+#                                  "policies": pols,
+#                                  "policy_mapping_fn": pol_age_map,
+#                              }},
+#                          )
+# print(trainer)
+# print(trainer.get_policy().action_space_struct)
+
+#
+# for i in range(1000):
+#    # Perform one iteration of training the policy with PPO
+#    result = trainer.train()
+#    print(pretty_print(result))
+#
+#    if i % 100 == 0:
+#        checkpoint = trainer.save()
+#        print("checkpoint saved at", checkpoint)

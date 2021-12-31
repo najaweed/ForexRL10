@@ -8,8 +8,10 @@ if not mt5.initialize():
 
 class Symbols:
     def __init__(self,
-                 c_currencies: list = currencies,
+                 c_currencies=None,
                  ):
+        if c_currencies is None:
+            c_currencies = currencies
         self.currencies = c_currencies
         self._all_symbols = self.all_symbols
 
@@ -28,8 +30,8 @@ class Symbols:
         selected_symbol = []
         for i in self.currencies:
             for j in self.currencies:
-                if i != j and f'{i}{j}.c' in self._all_symbols:
-                    selected_symbol.append(f'{i}{j}.c')
+                if i != j and f'{i}{j}.si' in self._all_symbols:
+                    selected_symbol.append(f'{i}{j}.si')
         return selected_symbol
 
     @property

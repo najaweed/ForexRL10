@@ -1,24 +1,23 @@
-from ray import tune
-from ray.rllib.env.multi_agent_env import MultiAgentEnv
 import numpy as np
 import pandas as pd
+from ray import tune
+from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from RL.Env.MonoEnv import mono_env_maker
-from FinFeature.OfflineMarket import OfflineMarket
-
+import torch
+import math
 
 def multi_config_maker(market):
     multi_env_conf = {"num_agents": market.num_symbols}
     list_mono_config = []
     for i in range(market.num_symbols):
-        state_obs = np.hstack((market.prices[:, i:(i + 1)],)) # market.log_return[:, i:(i + 1)]
-        state_rew = market.price_point_diff[:, i]
+        state_obs = np.hstack((market.prices()[:, i:(i + 1)],))
+
+        # state_obs = np.array(
+        #     torch.randn_like(torch.from_numpy(state_obs), requires_grad=False).cpu())
+        state_rew = market.price_point_diff('close')[:, i]
         list_mono_config.append({"state_observations": state_obs, "state_rewards": state_rew})
     multi_env_conf["mono_config"] = list_mono_config
     return multi_env_conf
-
-
-def multi_env_maker(p_multi_env_config):
-    return MultiEnv(p_multi_env_config)
 
 
 class MultiEnv(MultiAgentEnv):
@@ -35,6 +34,10 @@ class MultiEnv(MultiAgentEnv):
         self.action_space = self.env_agents[0].action_space
 
         self.index_last_step = self.env_agents[0].index_last_step
+        self.total_reward = 0.
+        self.total_rand_reward = 0.
+        self.max_reward = 0.
+        self.index_step = 0.
 
     def reset(self):
         self.dones = set()
@@ -48,14 +51,39 @@ class MultiEnv(MultiAgentEnv):
             if done[i]:
                 self.dones.add(i)
         done["__all__"] = len(self.dones) == len(self.env_agents)
+        self.index_step += 1.
+
+        for r in rew.values():
+            self.total_reward += r
+
+        step_max_reward = []
+        for rand_rew in info.values():
+            self.total_rand_reward += rand_rew[0]
+            step_max_reward.append(abs(rand_rew[1]))
+        self.max_reward += sum(step_max_reward)/len(step_max_reward)
+        # self.render()
         return obs, rew, done, info
 
     def render(self, mode=None):
-        return self.env_agents[0].render(mode)
+        return print('\t step:', int(self.index_step),
+                     "\t|",
+                     "\t max reward:", int(self.max_reward),
+                     "\t|",
+                     "\t total reward:", int(self.total_reward),
+                     "\t|",
+                     "\t rand reward:", int(self.total_rand_reward))
 
+
+#### REGISTER MODEL ####
+from FinFeature.OfflineMarket import OfflineMarket
 
 df = pd.read_csv(f'/home/z/Desktop/backups/memory_backup/DB/rates.csv')
 market_1 = OfflineMarket(df)
+
+
+def multi_env_maker(p_multi_env_config):
+    return MultiEnv(p_multi_env_config)
+
 
 multi_env_config = multi_config_maker(market_1)
 tune.register_env('Forex', multi_env_maker)
